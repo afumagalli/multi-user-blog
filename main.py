@@ -132,9 +132,7 @@ class NewPostHandler(Handler):
 class PostHandler(Handler):
     def get(self, post_id):
         key = db.Key.from_path('BlogPost', int(post_id), parent=blog_key())
-        print "Key = " + str(key)
         post = db.get(key)
-        print post
         if not post:
             self.error(404)
             return

@@ -1,5 +1,8 @@
-<h1>Rot13</h1>
-<form method="post">
+{% extends "base.html" %}
+{% block content %}
+  <h1>Rot13</h1>
+  <form method="post">
     <textarea name="text">{{ text }}</textarea>
     <input type="Submit">
-</form>
+  </form>
+{% endblock %}
