@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+  {% for post in posts %}
+    <h2>{{ post.subject }}</h2>
+    <h3>Posted on: {{ post.created.strftime("%b %d, %Y") }}</h3>
+    <article>{{ post.content }}</article>
+  {% endfor %}
+  <br>
+  <a href="/blog/newpost">Create new post</a>
+{% endblock %}

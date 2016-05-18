@@ -8,6 +8,7 @@ import string
 import webapp2
 import jinja2
 
+from secret import secret as SECRET
 from google.appengine.ext import db
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -23,7 +24,6 @@ def valid_password(password):
 def valid_email(email):
     return EMAIL_RE.match(email)
 
-SECRET = "imosecret"
 def hash_str(s):
     return hmac.new(SECRET, s).hexdigest()
 

@@ -8,9 +8,8 @@ import string
 import webapp2
 import jinja2
 
-import users
-import blog
-import secret
+from users import *
+from blog import *
 
 from google.appengine.ext import db
 
@@ -57,13 +56,13 @@ class SignupHandler(Handler):
         verify = self.request.get("verify")
         email = self.request.get("email")
 
-        if not username or not valid_username(username):
+        if not username or not users.valid_username(username):
             user_error = True
-        if not password or not verify or not valid_password(password):
+        if not password or not verify or not users.valid_password(password):
             pwd_error = True
         if password != verify:
             verify_error = True
-        if email and not valid_email(email):
+        if email and not users.valid_email(email):
             email_error = True
 
         if user_error or pwd_error or verify_error or email_error:
@@ -74,9 +73,9 @@ class SignupHandler(Handler):
                                        username = username,
                                        email = email)
         else:
-            user = User(username = username, pwd_hash = make_pw_hash(username, password), email = email)
+            user = User(username = username, pwd_hash = users.make_pw_hash(username, password), email = email)
             user.put()
-            user_cookie = make_secure_val(str(username))
+            user_cookie = users.make_secure_val(str(username))
             self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
             self.redirect("/welcome")
 
@@ -84,7 +83,7 @@ class WelcomeHandler(Handler):
     def get(self):
         user = self.request.cookies.get('user')
         if user:
-            username = check_secure_val(user)
+            username = users.check_secure_val(user)
             if username:
                 self.render("welcome.html", username = username)
             else:
@@ -99,8 +98,8 @@ class LoginHandler(Handler):
         username = self.request.get("username")
         password = self.request.get("password")
         user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username)[0]
-        if valid_pw(username, password, user.pwd_hash):
-            user_cookie = make_secure_val(str(username))
+        if users.valid_pw(username, password, user.pwd_hash):
+            user_cookie = users.make_secure_val(str(username))
             self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
             self.redirect("/welcome")
         else:
@@ -130,7 +129,7 @@ class NewPostHandler(Handler):
             error = "you need both a subject and content"
             self.render("newpost.html", subject = subject, content = content, error = error)
 
-class PostPage(Handler):
+class PostHandler(Handler):
     def get(self, post_id):
         key = db.Key.from_path('BlogPost', int(post_id), parent=blog_key())
         print "Key = " + str(key)
@@ -150,5 +149,5 @@ app = webapp2.WSGIApplication([
     ('/logout', LogoutHandler),
     ('/blog', BlogHandler),
     ('/blog/newpost', NewPostHandler),
-    ('/blog/([0-9]+)', PostPage)
+    ('/blog/([0-9]+)', PostHandler)
 ], debug=True)
