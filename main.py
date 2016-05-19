@@ -28,6 +28,27 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+    def set_secure_cookie(self, name, val):
+        cookie_val = make_secure_val(val)
+        self.response.headers.add_header(
+            'Set-Cookie',
+            '%s=%s; Path=/' % (name, cookie_val))
+
+    def read_secure_cookie(self, name):
+        cookie_val = self.request.cookies.get(name)
+        return cookie_val and check_secure_val(cookie_val)
+
+    def login(self, user):
+        self.set_secure_cookie('user_id', str(user.key().id()))
+
+    def logout(self):
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        uid = self.read_secure_cookie('user_id')
+        self.user = uid and User.by_id(int(uid))
+
 class MainHandler(Handler):
     def get(self):
         self.render("index.html")
@@ -56,13 +77,13 @@ class SignupHandler(Handler):
         verify = self.request.get("verify")
         email = self.request.get("email")
 
-        if not username or not users.valid_username(username):
+        if not username or not valid_username(username):
             user_error = True
-        if not password or not verify or not users.valid_password(password):
+        if not password or not verify or not valid_password(password):
             pwd_error = True
         if password != verify:
             verify_error = True
-        if email and not users.valid_email(email):
+        if email and not valid_email(email):
             email_error = True
 
         if user_error or pwd_error or verify_error or email_error:
@@ -73,9 +94,9 @@ class SignupHandler(Handler):
                                        username = username,
                                        email = email)
         else:
-            user = User(username = username, pwd_hash = users.make_pw_hash(username, password), email = email)
+            user = User(username = username, pwd_hash = make_pw_hash(username, password), email = email)
             user.put()
-            user_cookie = users.make_secure_val(str(username))
+            user_cookie = make_secure_val(str(username))
             self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
             self.redirect("/welcome")
 
@@ -83,7 +104,7 @@ class WelcomeHandler(Handler):
     def get(self):
         user = self.request.cookies.get('user')
         if user:
-            username = users.check_secure_val(user)
+            username = check_secure_val(user)
             if username:
                 self.render("welcome.html", username = username)
             else:
@@ -98,8 +119,8 @@ class LoginHandler(Handler):
         username = self.request.get("username")
         password = self.request.get("password")
         user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username)[0]
-        if users.valid_pw(username, password, user.pwd_hash):
-            user_cookie = users.make_secure_val(str(username))
+        if valid_pw(username, password, user.pwd_hash):
+            user_cookie = make_secure_val(str(username))
             self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
             self.redirect("/welcome")
         else:
@@ -117,7 +138,10 @@ class BlogHandler(Handler):
 
 class NewPostHandler(Handler):
     def get(self):
-        self.render("newpost.html")
+        if self.user():
+            self.render("newpost.html")
+        else:
+            self.redirect("/login")
     def post(self):
         subject = self.request.get("subject")
         content = self.request.get("content")

@@ -2,20 +2,16 @@
 <html>
 <head>
   <title>The Smoking Rooster</title>
-  <link rel="stylesheet" type="text/css" href="static/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/main.css">
 </head>
 <body>
-  <a href="/" class="main-title">
-    The Smoking Rooster
-  </a>
+  <a href="/" class="main-title">The Smoking Rooster</a>
   <a href="http://twitter.com/roastedTofu" class="sub-title">@roastedTofu</a>
-  <nav>
-    <ul class="navigation">
-      <li class="nav-item"><a href="/">Home</a></li>
-      <li class="nav-item"><a href="/blog">Blog</a></li>
-      <li class="nav-item" style="float: right; color: #333;"><a style="color: #333;" href="/rot13">?</a></li>
-    </ul>
-  </nav>
+  <ul class="navigation">
+    <li class="nav-item"><a href="/">Home</a></li>
+    <li class="nav-item"><a href="/blog">Blog</a></li>
+    <li class="nav-item" style="float: right; color: #333;"><a style="color: #333;" href="/rot13">?</a></li>
+  </ul>
   <div class="login-area">
     {% if user %}
       {{user.name}} <a class="login-link" href="/logout">logout</a>
@@ -26,8 +22,8 @@
     {% endif %}
   </div>
   <div id="content">
-  {% block content %}
-  {% endblock %}
+    {% block content %}
+    {% endblock %}
   </div>
 </body>
 </html>
