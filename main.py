@@ -118,13 +118,15 @@ class LoginHandler(Handler):
     def post(self):
         username = self.request.get("username")
         password = self.request.get("password")
-        user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username)[0]
-        if valid_pw(username, password, user.pwd_hash):
+        user_query = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username)
+        user = user_query.get()
+        if user and valid_pw(username, password, user.pwd_hash):
             user_cookie = make_secure_val(str(username))
             self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
             self.redirect("/welcome")
         else:
-            self.render("login.html")
+            error = "Not a valid username or password"
+            self.render("login.html", username = username, error = error)
 
 class LogoutHandler(Handler):
     def get(self):
