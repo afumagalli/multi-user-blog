@@ -3,28 +3,36 @@
   <h1>Signup</h1>
   <form method="post">
     <label>Username</label>
+    <div class="error">
+      {% if user_error %}
+        That's not a valid username.
+      {% endif %}
+      {% if exist_error %}
+        That username already exists.
+      {% endif %}
+    </div>
     <input name="username" value="{{ username }}">
-    {% if user_error %}
-      That's not a valid username.
-    {% endif %}
-    <br>
     <label>Password</label>
+    <div class="error">
+      {% if pwd_error %}
+        That's not a valid password.
+      {% endif %}
+    </div>
     <input type="password" name="password">
-    {% if pwd_error %}
-      That's not a valid password.
-    {% endif %}
-    <br>
     <label>Verify Password</label>
+    <div class="error">
+      {% if verify_error %}
+        Passwords do not match.
+      {% endif %}
+    </div>
     <input type="password" name="verify">
-    {% if verify_error %}
-      Passwords do not match.
-    {% endif %}
-    <br>
     <label>Email (optional)</label>
+    <div class="error">
+      {% if email_error %}
+        That's not a valid email.
+      {% endif %}
+    </div>
     <input name="email" value="{{ email }}">
-    {% if email_error %}
-      That's not a valid email.
-    {% endif %}
     <br>
     <input type="Submit">
   </form>

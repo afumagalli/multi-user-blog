@@ -72,33 +72,39 @@ class SignupHandler(Handler):
         pwd_error = False
         verify_error = False
         email_error = False
+        exist_error = False
         username = self.request.get("username")
         password = self.request.get("password")
         verify = self.request.get("verify")
         email = self.request.get("email")
 
-        if not username or not valid_username(username):
-            user_error = True
-        if not password or not verify or not valid_password(password):
-            pwd_error = True
-        if password != verify:
-            verify_error = True
-        if email and not valid_email(email):
-            email_error = True
-
-        if user_error or pwd_error or verify_error or email_error:
-            self.render("signup.html", user_error = user_error,
-                                       pwd_error = pwd_error,
-                                       verify_error = verify_error,
-                                       email_error = email_error,
-                                       username = username,
-                                       email = email)
+        user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username).get()
+        if user:
+            exist_error = True
+            self.render("signup.html", exist_error = exist_error)
         else:
-            user = User(username = username, pwd_hash = make_pw_hash(username, password), email = email)
-            user.put()
-            user_cookie = make_secure_val(str(username))
-            self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
-            self.redirect("/welcome")
+            if not username or not valid_username(username):
+                user_error = True
+            if not password or not verify or not valid_password(password):
+                pwd_error = True
+            if password != verify:
+                verify_error = True
+            if email and not valid_email(email):
+                email_error = True
+
+            if user_error or pwd_error or verify_error or email_error:
+                self.render("signup.html", user_error = user_error,
+                                           pwd_error = pwd_error,
+                                           verify_error = verify_error,
+                                           email_error = email_error,
+                                           username = username,
+                                           email = email)
+            else:
+                user = User(username = username, pwd_hash = make_pw_hash(username, password), email = email)
+                user.put()
+                user_cookie = make_secure_val(str(username))
+                self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
+                self.redirect("/welcome")
 
 class WelcomeHandler(Handler):
     def get(self):
@@ -118,8 +124,7 @@ class LoginHandler(Handler):
     def post(self):
         username = self.request.get("username")
         password = self.request.get("password")
-        user_query = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username)
-        user = user_query.get()
+        user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username).get()
         if user and valid_pw(username, password, user.pwd_hash):
             user_cookie = make_secure_val(str(username))
             self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)

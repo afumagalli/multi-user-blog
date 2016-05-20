@@ -48,6 +48,9 @@ def valid_pw(name, pw, h):
     salt = h.split(',')[1]
     return h == make_pw_hash(name, pw, salt)
 
+def users_key(group = 'default'):
+    return db.Key.from_path('users', group)
+
 class User(db.Model):
     username = db.StringProperty(required = True)
     pwd_hash = db.StringProperty(required = True)
