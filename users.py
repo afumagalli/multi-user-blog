@@ -9,7 +9,7 @@ import webapp2
 import jinja2
 
 from secret import secret as SECRET
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PWD_RE = re.compile(r"^.{3,20}$")
@@ -49,9 +49,9 @@ def valid_pw(name, pw, h):
     return h == make_pw_hash(name, pw, salt)
 
 def users_key(group = 'default'):
-    return db.Key.from_path('users', group)
+    return ndb.Key('users', group)
 
-class User(db.Model):
-    username = db.StringProperty(required = True)
-    pwd_hash = db.StringProperty(required = True)
-    email = db.StringProperty()
+class User(ndb.Model):
+    username = ndb.StringProperty(required = True)
+    pwd_hash = ndb.StringProperty(required = True)
+    email = ndb.StringProperty()

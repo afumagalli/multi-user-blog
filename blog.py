@@ -8,12 +8,15 @@ import string
 import webapp2
 import jinja2
 
-from google.appengine.ext import db
+from users import *
+
+from google.appengine.ext import ndb
 
 def blog_key(name = 'default'):
-    return db.Key.from_path('blogs', name)
+    return ndb.Key('blogs', name)
 
-class BlogPost(db.Model):
-    subject = db.StringProperty(required = True)
-    content = db.TextProperty(required = True)
-    created = db.DateTimeProperty(auto_now_add = True)
+class BlogPost(ndb.Model):
+    subject = ndb.StringProperty(required = True)
+    content = ndb.TextProperty(required = True)
+    created = ndb.DateTimeProperty(auto_now_add = True)
+    author = ndb.StructuredProperty(User)

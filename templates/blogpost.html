@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>{{ post.subject }}</h2>
+  <h2>{{ post.subject }} by {{ post.author.username }}</h2>
   <h3>Posted on: {{ post.created.strftime("%b %d, %Y") }}</h3>
   <article>{{ post.content | safe }}</article>
   <br>

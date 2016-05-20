@@ -11,7 +11,7 @@ import jinja2
 from users import *
 from blog import *
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -48,7 +48,7 @@ class Handler(webapp2.RequestHandler):
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
         username = self.read_secure_cookie('user')
-        self.user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username).get()
+        self.user = User.gql("WHERE username = '%s'" % username).get()
 
 class MainHandler(Handler):
     def get(self):
@@ -79,7 +79,7 @@ class SignupHandler(Handler):
         verify = self.request.get("verify")
         email = self.request.get("email")
 
-        user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username).get()
+        user = User.gql("WHERE username = '%s'" % username).get()
         if user:
             exist_error = True
             self.render("signup.html", exist_error = exist_error,
@@ -128,7 +128,7 @@ class LoginHandler(Handler):
     def post(self):
         username = self.request.get("username")
         password = self.request.get("password")
-        user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username).get()
+        user = User.gql("WHERE username = '%s'" % username).get()
         if user and valid_pw(username, password, user.pwd_hash):
             user_cookie = make_secure_val(str(username))
             self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % user_cookie)
@@ -144,7 +144,7 @@ class LogoutHandler(Handler):
 
 class BlogHandler(Handler):
     def get(self):
-        posts = db.GqlQuery("SELECT * FROM BlogPost ORDER BY created DESC")
+        posts = BlogPost.gql("ORDER BY created DESC")
         self.render("blog.html", posts = posts)
 
 class NewPostHandler(Handler):
@@ -160,21 +160,33 @@ class NewPostHandler(Handler):
         subject = self.request.get("subject")
         content = self.request.get("content")
         if subject and content:
-            post = BlogPost(parent = blog_key(), subject = subject, content = content)
+            post = BlogPost(parent = blog_key(), subject = subject, content = content, author = self.user)
             post.put()
-            self.redirect('/blog/%s' % str(post.key().id()))
+            self.redirect('/blog/%s' % str(post.key.id()))
         else:
             error = "you need both a subject and content"
             self.render("newpost.html", subject = subject, content = content, error = error)
 
 class PostHandler(Handler):
     def get(self, post_id):
-        key = db.Key.from_path('BlogPost', int(post_id), parent=blog_key())
-        post = db.get(key)
+        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+        post = key.get()
         if not post:
             self.error(404)
             return
         self.render("blogpost.html", post = post)
+
+class EditPostHandler(Handler):
+    def get(self, post_id):
+        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+        post = ndb.get(key)
+        if not post:
+            self.error(404)
+            return
+        self.render("editpost.html", post = post)
+
+    def post(self):
+        self.render("blog.html")
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
@@ -185,5 +197,6 @@ app = webapp2.WSGIApplication([
     ('/logout', LogoutHandler),
     ('/blog', BlogHandler),
     ('/blog/newpost', NewPostHandler),
-    ('/blog/([0-9]+)', PostHandler)
+    ('/blog/([0-9]+)', PostHandler),
+    ('/blog/([0-9]+/edit', EditPostHandler)
 ], debug=True)
