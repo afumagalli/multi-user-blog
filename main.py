@@ -22,6 +22,7 @@ class Handler(webapp2.RequestHandler):
         self.response.write(*a, **kw)
 
     def render_str(self, template, **kw):
+        kw['user'] = self.user
         t = jinja_env.get_template(template)
         return t.render(kw)
 
@@ -38,16 +39,16 @@ class Handler(webapp2.RequestHandler):
         cookie_val = self.request.cookies.get(name)
         return cookie_val and check_secure_val(cookie_val)
 
-    def login(self, user):
-        self.set_secure_cookie('user_id', str(user.key().id()))
+    # def login(self, user):
+    #     self.set_secure_cookie('user_id', str(user.key().id()))
 
-    def logout(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+    # def logout(self):
+    #     self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
-        uid = self.read_secure_cookie('user_id')
-        self.user = uid and User.by_id(int(uid))
+        username = self.read_secure_cookie('user')
+        self.user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username).get()
 
 class MainHandler(Handler):
     def get(self):
@@ -81,7 +82,9 @@ class SignupHandler(Handler):
         user = db.GqlQuery("SELECT * FROM User WHERE username = '%s'" % username).get()
         if user:
             exist_error = True
-            self.render("signup.html", exist_error = exist_error)
+            self.render("signup.html", exist_error = exist_error,
+                                       username = username,
+                                       email = email)
         else:
             if not username or not valid_username(username):
                 user_error = True
@@ -121,6 +124,7 @@ class WelcomeHandler(Handler):
 class LoginHandler(Handler):
     def get(self):
         self.render("login.html")
+
     def post(self):
         username = self.request.get("username")
         password = self.request.get("password")
@@ -145,11 +149,14 @@ class BlogHandler(Handler):
 
 class NewPostHandler(Handler):
     def get(self):
-        if self.user():
+        if self.user:
             self.render("newpost.html")
         else:
             self.redirect("/login")
+
     def post(self):
+        if not self.user:
+            self.redirect("/blog")
         subject = self.request.get("subject")
         content = self.request.get("content")
         if subject and content:

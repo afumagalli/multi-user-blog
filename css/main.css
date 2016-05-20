@@ -35,10 +35,8 @@ h2 {
     margin-bottom: 20px;
 }
 
-h3 {
+.welcome-header {
     text-align: center;
-    font-size: 24px;
-    font-weight: bold;
 }
 
 img {
