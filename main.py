@@ -179,13 +179,16 @@ class PostHandler(Handler):
 
 class EditPostHandler(Handler):
     def get(self):
-        post_id = self.request.get("post")
-        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
-        post = key.get()
-        if not post:
-            self.error(404)
-            return
-        self.render("editpost.html", subject = post.subject, content = post.content)
+        if self.user:
+            post_id = self.request.get("post")
+            key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+            post = key.get()
+            if not post:
+                self.error(404)
+                return
+            self.render("editpost.html", subject = post.subject, content = post.content)
+        else:
+            self.redirect("/login")
 
     def post(self):
         post_id = self.request.get("post")
@@ -208,13 +211,16 @@ class EditPostHandler(Handler):
 
 class DeletePostHandler(Handler):
     def get(self):
-        post_id = self.request.get("post")
-        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
-        post = key.get()
-        if not post:
-            self.error(404)
-            return
-        self.render("deletepost.html", post = post)
+        if self.user:
+            post_id = self.request.get("post")
+            key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+            post = key.get()
+            if not post:
+                self.error(404)
+                return
+            self.render("deletepost.html", post = post)
+        else:
+            self.redirect("/login")
 
     def post(self):
         post_id = self.request.get("post")
