@@ -206,6 +206,28 @@ class EditPostHandler(Handler):
         else:
             self.redirect("/blog")
 
+class DeletePostHandler(Handler):
+    def get(self):
+        post_id = self.request.get("post")
+        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+        post = key.get()
+        if not post:
+            self.error(404)
+            return
+        self.render("deletepost.html", post = post)
+
+    def post(self):
+        post_id = self.request.get("post")
+        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+        post = key.get()
+        if post and post.author.username == self.user.username:
+            key.delete()
+            time.sleep(0.5)
+            self.redirect("/blog")
+        else:
+            self.redirect("/blog")
+
+
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
     ('/rot13', Rot13Handler),
@@ -216,5 +238,6 @@ app = webapp2.WSGIApplication([
     ('/blog', BlogHandler),
     ('/blog/newpost', NewPostHandler),
     ('/blog/([0-9]+)', PostHandler),
-    ('/blog/edit', EditPostHandler)
+    ('/blog/edit', EditPostHandler),
+    ('/blog/delete', DeletePostHandler)
 ], debug=True)
