@@ -163,7 +163,7 @@ class NewPostHandler(Handler):
         if subject and content:
             post = BlogPost(parent = blog_key(), subject = subject, content = content, author = self.user)
             post.put()
-            self.redirect('/blog/%s' % str(post.key.id()))
+            self.redirect("/blog/%s" % str(post.key.id()))
         else:
             error = "you need both a subject and content"
             self.render("newpost.html", subject = subject, content = content, error = error)
@@ -172,10 +172,22 @@ class PostHandler(Handler):
     def get(self, post_id):
         key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
         post = key.get()
+        comments = Comment.gql("WHERE post_id = %s ORDER BY created DESC" % int(post_id))
         if not post:
             self.error(404)
             return
-        self.render("blogpost.html", post = post)
+        self.render("blogpost.html", post = post, comments = comments)
+    def post(self, post_id):
+        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+        post = key.get()
+        content = self.request.get("content")
+        if content:
+            comment = Comment(content = str(content), author = self.user, post_id = int(post_id))
+            comment.put()
+            time.sleep(0.1)
+            self.redirect("/blog/%s" % post_id)
+        else:
+            self.render("blogpost.html", post = post)
 
 class EditPostHandler(Handler):
     def get(self):
@@ -201,7 +213,7 @@ class EditPostHandler(Handler):
                 post.subject = subject
                 post.content = content
                 post.put()
-                time.sleep(0.5)
+                time.sleep(0.1)
                 self.redirect("/blog")
             else:
                 error = "you need both a subject and content"
@@ -228,7 +240,7 @@ class DeletePostHandler(Handler):
         post = key.get()
         if post and post.author.username == self.user.username:
             key.delete()
-            time.sleep(0.5)
+            time.sleep(0.1)
             self.redirect("/blog")
         else:
             self.redirect("/blog")

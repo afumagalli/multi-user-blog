@@ -10,6 +10,7 @@
         <a href="/blog/delete?post={{ post.key.id() }}">Delete</a>
       </div>
     {% endif %}
+    <a href="/blog/{{ post.key.id() }}">Read more</a>
   {% endfor %}
   <br>
   <a href="/blog/newpost">Create new post</a>
