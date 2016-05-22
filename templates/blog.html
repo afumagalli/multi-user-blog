@@ -6,8 +6,8 @@
     <article>{{ post.content }}</article>
     {% if post.author.username == user.username %}
       <div class="author-options">
-        <a href="/blog/edit">Edit</a>
-        <a href="/blog/delete">Delete</a>
+        <a href="/blog/edit?post={{ post.key.id() }}">Edit</a>
+        <a href="/blog/delete?post={{ post.key.id() }}">Delete</a>
       </div>
     {% endif %}
   {% endfor %}

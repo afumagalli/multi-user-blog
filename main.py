@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import codecs
 import hashlib
 import hmac
@@ -177,16 +178,33 @@ class PostHandler(Handler):
         self.render("blogpost.html", post = post)
 
 class EditPostHandler(Handler):
-    def get(self, post_id):
+    def get(self):
+        post_id = self.request.get("post")
         key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
-        post = ndb.get(key)
+        post = key.get()
         if not post:
             self.error(404)
             return
-        self.render("editpost.html", post = post)
+        self.render("editpost.html", subject = post.subject, content = post.content)
 
     def post(self):
-        self.render("blog.html")
+        post_id = self.request.get("post")
+        key = ndb.Key('BlogPost', int(post_id), parent=blog_key())
+        post = key.get()
+        if post and post.author.username == self.user.username:
+            subject = self.request.get("subject")
+            content = self.request.get("content")
+            if subject and content:
+                post.subject = subject
+                post.content = content
+                post.put()
+                time.sleep(0.5)
+                self.redirect("/blog")
+            else:
+                error = "you need both a subject and content"
+                self.render("editpost.html", subject = subject, content = content, error = error)
+        else:
+            self.redirect("/blog")
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
@@ -198,5 +216,5 @@ app = webapp2.WSGIApplication([
     ('/blog', BlogHandler),
     ('/blog/newpost', NewPostHandler),
     ('/blog/([0-9]+)', PostHandler),
-    ('/blog/([0-9]+/edit', EditPostHandler)
+    ('/blog/edit', EditPostHandler)
 ], debug=True)
