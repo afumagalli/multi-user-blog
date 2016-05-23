@@ -241,9 +241,60 @@ class DeletePostHandler(Handler):
         if post and post.author.username == self.user.username:
             key.delete()
             time.sleep(0.1)
-            self.redirect("/blog")
+        self.redirect("/blog")
+
+class EditCommentHandler(Handler):
+    def get(self):
+        if self.user:
+            comment_id = self.request.get("comment")
+            key = ndb.Key('Comment', int(comment_id))
+            comment = key.get()
+            if not comment:
+                self.error(404)
+                return
+            self.render("editcomment.html", content = comment.content, post_id = comment.post_id)
         else:
-            self.redirect("/blog")
+            self.redirect("/login")
+
+    def post(self):
+        comment_id = self.request.get("comment")
+        key = ndb.Key('Comment', int(comment_id))
+        comment = key.get()
+        if comment and comment.author.username == self.user.username:
+            content = self.request.get("content")
+            if content:
+                comment.content = content
+                comment.put()
+                time.sleep(0.1)
+                self.redirect("/blog/%s" % comment.post_id)
+            else:
+                error = "you need both a subject and content"
+                self.render("editcomment.html", content = content, post_id = comment.post_id, error = error)
+        else:
+            self.redirect("/blog/%s" % comment.post_id)
+
+class DeleteCommentHandler(Handler):
+    def get(self):
+        if self.user:
+            comment_id = self.request.get("comment")
+            key = ndb.Key('Comment', int(comment_id))
+            comment = key.get()
+            if not comment:
+                self.error(404)
+                return
+            self.render("deletecomment.html", comment = comment)
+        else:
+            self.redirect("/login")
+
+    def post(self):
+        comment_id = self.request.get("comment")
+        key = ndb.Key('Comment', int(comment_id))
+        comment = key.get()
+        if comment and comment.author.username == self.user.username:
+            post_id = comment.post_id
+            key.delete()
+            time.sleep(0.1)
+        self.redirect("/blog/%s" % post_id)
 
 
 app = webapp2.WSGIApplication([
@@ -257,5 +308,7 @@ app = webapp2.WSGIApplication([
     ('/blog/newpost', NewPostHandler),
     ('/blog/([0-9]+)', PostHandler),
     ('/blog/edit', EditPostHandler),
-    ('/blog/delete', DeletePostHandler)
+    ('/blog/delete', DeletePostHandler),
+    ('/comment/edit', EditCommentHandler),
+    ('/comment/delete', DeleteCommentHandler)
 ], debug=True)

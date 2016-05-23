@@ -16,13 +16,21 @@
     <div class="comment-content">
       {{ comment.content }}
     </div>
+    {% if comment.author.username == user.username %}
+        <div class="author-options">
+          <a href="/comment/edit?comment={{ comment.key.id() }}">Edit</a>
+          <a href="/comment/delete?comment={{ comment.key.id() }}">Delete</a>
+        </div>
+      {% endif %}
     <br>
   {% endfor %}
   <br>
-  <form method="post">
-    <textarea name="content">{{ content }}</textarea>
-    <div class="error">{{ error }}</div>
-    <input type="submit">
-  </form>
-  <a href="/blog">Back to home</a>
+  {% if user.username %}
+    <form method="post">
+      <textarea name="content">{{ content }}</textarea>
+      <div class="error">{{ error }}</div>
+      <input type="submit">
+    </form>
+  {% endif %}
+  <a href="/blog">Back to blog home</a>
 {% endblock %}
