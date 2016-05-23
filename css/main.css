@@ -166,3 +166,8 @@ input[type=submit] {
     color: #333;
 }
 
+.like {
+    background-color: blue;
+    color: white;
+}
+

@@ -20,10 +20,14 @@ class BlogPost(ndb.Model):
     content = ndb.TextProperty(required = True)
     created = ndb.DateTimeProperty(auto_now_add = True)
     author = ndb.StructuredProperty(User)
-    #comments = ndb.JsonProperty(default=[])
+    likes = ndb.IntegerProperty(default = 0)
 
 class Comment(ndb.Model):
     post_id = ndb.IntegerProperty(required = True)
     author = ndb.StructuredProperty(User)
     content = ndb.StringProperty(required = True)
     created = ndb.DateTimeProperty(auto_now_add = True)
+
+class Like(ndb.Model):
+    post_id = ndb.IntegerProperty(required = True)
+    author = ndb.StructuredProperty(User)

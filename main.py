@@ -296,7 +296,6 @@ class DeleteCommentHandler(Handler):
             time.sleep(0.1)
         self.redirect("/blog/%s" % post_id)
 
-
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
     ('/rot13', Rot13Handler),

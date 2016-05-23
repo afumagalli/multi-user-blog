@@ -4,6 +4,10 @@
   <h3>Posted on: {{ post.created.strftime("%b %d, %Y") }}</h3>
   <article>{{ post.content | safe }}</article>
   <br>
+  <div class="likes">
+    {{ post.likes }} people like this
+    <button class="like" type="submit" form="like">👍 Like</button>
+  </div>
   <h3>Comments</h3>
   {% for comment in comments %}
     <div class="comment-author">
