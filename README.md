@@ -1,6 +1,8 @@
 # multi-user-blog
 Multi User Blog Project for Udacity Full Stack Nanodegree
 
+You can find the live version of this project at: http://smoking-rooster.appspot.com/
+
 To run this code, you must first have the [Google App Engine SDK for Python](https://cloud.google.com/appengine/downloads) installed.
 
 __Note__: You will need a secret key in a file secret.py
