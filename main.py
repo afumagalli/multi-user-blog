@@ -35,7 +35,7 @@ class Handler(webapp2.RequestHandler):
         self.write(self.render_str(template, **kw))
 
     def set_secure_cookie(self, name, val):
-        """Sets a cookie""""
+        """Sets a cookie"""
         cookie_val = make_secure_val(val)
         self.response.headers.add_header(
             'Set-Cookie',
