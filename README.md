@@ -11,4 +11,5 @@ Then you can either run the application through the GAE Launcher GUI
 or through the command line
   - Navigate to project directory
   - Run `dev_appserver.py ./`
+
 __Note__: This assumes you have symlinks for GAE commands installed. If you don't, open the GAE Launcher and you will be prompted to install them.
