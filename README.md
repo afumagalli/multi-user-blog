@@ -2,6 +2,7 @@
 Multi User Blog Project for Udacity Full Stack Nanodegree
 
 To run this code, you must first have the [Google App Engine SDK for Python](https://cloud.google.com/appengine/downloads) installed.
+
 __Note__: You will need a secret key in a file secret.py
 
 Then you can either run the application through the GAE Launcher GUI
