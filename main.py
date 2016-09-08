@@ -337,6 +337,17 @@ class DeleteCommentHandler(Handler):
             time.sleep(0.1)
         self.redirect("/blog/%s" % post_id)
 
+class AboutHandler(Handler):
+    """Handles rendering of the about me page"""
+    def get(self):
+        self.render("about.html")
+
+class PortfolioHandler(Handler):
+    """Renders the main portfolio page"""
+    def get(self):
+        projects = Project.gql("ORDER BY created DESC")
+        self.render("portfolio.html")
+
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
     ('/rot13', Rot13Handler),
@@ -350,5 +361,7 @@ app = webapp2.WSGIApplication([
     ('/blog/edit', EditPostHandler),
     ('/blog/delete', DeletePostHandler),
     ('/comment/edit', EditCommentHandler),
-    ('/comment/delete', DeleteCommentHandler)
+    ('/comment/delete', DeleteCommentHandler),
+    ('/about', AboutHandler),
+    ('/portfolio', PortfolioHandler)
 ], debug=True)
