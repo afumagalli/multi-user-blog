@@ -151,7 +151,7 @@ class LogoutHandler(Handler):
     """Handles user logout, redirects to signup on completion"""
     def get(self):
         self.response.headers.add_header("Set-Cookie", "user=; Path=/")
-        self.redirect("/signup")
+        self.redirect("/login")
 
 class BlogHandler(Handler):
     """Renders the main blog page"""
@@ -358,7 +358,7 @@ class NewProjectHandler(Handler):
         if self.user.email == "anthony.fumagalli@gmail.com":
             self.render("newproject.html")
         elif self.user:
-            error = "you do not have permission to create a post, but you may comment on existing posts"
+            error = "you do not have permission to create a project, but you may comment on existing projects"
             self.redirect("/portfolio")
         else:
             self.redirect("/login")
