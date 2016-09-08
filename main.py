@@ -11,6 +11,7 @@ import jinja2
 
 from users import *
 from blog import *
+from portfolio import Project, portfolio_key
 
 from google.appengine.ext import ndb
 
@@ -161,8 +162,11 @@ class BlogHandler(Handler):
 class NewPostHandler(Handler):
     """Handles creation of new posts"""
     def get(self):
-        if self.user:
+        if self.user.email == "anthony.fumagalli@gmail.com":
             self.render("newpost.html")
+        elif self.user:
+            error = "you do not have permission to create a post, but you may comment on existing posts"
+            self.redirect("/blog")
         else:
             self.redirect("/login")
 
@@ -346,7 +350,34 @@ class PortfolioHandler(Handler):
     """Renders the main portfolio page"""
     def get(self):
         projects = Project.gql("ORDER BY created DESC")
-        self.render("portfolio.html")
+        self.render("portfolio.html", projects = projects)
+
+class NewProjectHandler(Handler):
+    """Handles creation of new portfolio projects"""
+    def get(self):
+        if self.user.email == "anthony.fumagalli@gmail.com":
+            self.render("newproject.html")
+        elif self.user:
+            error = "you do not have permission to create a post, but you may comment on existing posts"
+            self.redirect("/portfolio")
+        else:
+            self.redirect("/login")
+
+    def post(self):
+        if not self.user:
+            # if no user, redirect to blog page
+            self.redirect("/portfolio")
+        title = self.request.get("title")
+        description = self.request.get("description")
+        link = self.request.get("link")
+        if title and description:
+            project = Project(parent = portfolio_key(), title = title, description = description, link = link)
+            project.put()
+            self.redirect("/portfolio")
+            # self.redirect("/portfolio/%s" % str(project.key.id()))
+        else:
+            error = "you need both a title and description"
+            self.render("newproject.html", title = title, description = description, link = link, error = error)
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
@@ -363,5 +394,6 @@ app = webapp2.WSGIApplication([
     ('/comment/edit', EditCommentHandler),
     ('/comment/delete', DeleteCommentHandler),
     ('/about', AboutHandler),
-    ('/portfolio', PortfolioHandler)
+    ('/portfolio', PortfolioHandler),
+    ('/portfolio/newproject', NewProjectHandler)
 ], debug=True)
