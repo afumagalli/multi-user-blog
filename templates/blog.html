@@ -14,5 +14,7 @@
     <br>
   {% endfor %}
   <br>
-  <a href="/blog/newpost">Create new post</a>
+  {% if user.email == "anthony.fumagalli@gmail.com" %}
+    <a href="/blog/newpost">Create new post</a>
+  {% endif %}
 {% endblock %}
